@@ -2,7 +2,7 @@
 
 # Work Breakdown: AI Mortgage Quickstart
 
-**Version:** 1.0
+**Version:** 1.1
 **Date:** 2026-02-12
 **Status:** Approved
 
@@ -12,7 +12,7 @@
 
 1. [Overview](#1-overview)
 2. [Epic Structure](#2-epic-structure)
-3. [Sprint Planning](#3-sprint-planning)
+3. [Execution Order and Parallelism](#3-execution-order-and-parallelism)
 4. [Critical Path Analysis](#4-critical-path-analysis)
 5. [Risk Register](#5-risk-register)
 6. [Story Details by Phase](#6-story-details-by-phase)
@@ -21,7 +21,7 @@
 
 ## 1. Overview
 
-This work breakdown organizes the 55 work units from the technical design into trackable stories grouped into epics and sprints. It provides the sequencing, dependency mapping, and effort estimation needed to execute the project.
+This work breakdown organizes the 55 work units from the technical design into trackable stories grouped into epics. It provides the sequencing, dependency mapping, and effort estimation needed to execute the project.
 
 ### Summary Metrics
 
@@ -32,7 +32,16 @@ This work breakdown organizes the 55 work units from the technical design into t
 | Total Estimated Effort | ~72 hours |
 | Critical Path Duration | ~36 hours |
 | Phases | 4 |
-| Sprints | 9 |
+
+### Effort by Phase
+
+| Phase | Stories | Estimated Effort |
+|-------|---------|-----------------|
+| Phase 1: Foundation | 20 | 23.5 hours |
+| Phase 2: Core AI Agents | 13 | 18 hours |
+| Phase 3a: Full Agent Suite | 5 | 7.5 hours |
+| Phase 3b: Public Access | 7 | 9.5 hours |
+| Phase 4: Operability | 10 | 13 hours |
 
 ### Effort Sizing Legend
 
@@ -288,286 +297,146 @@ This work breakdown organizes the 55 work units from the technical design into t
 
 ---
 
-## 3. Sprint Planning
+## 3. Execution Order and Parallelism
 
-### Sprint 1: Foundation Infrastructure (Phase 1, Week 1)
+This section describes the dependency-driven execution order for each phase. Stories within a phase must respect their dependency chains, but stories without dependencies on each other can run in parallel.
 
-**Sprint Goal:** Establish the project structure, infrastructure services, and database foundation.
+### Phase 1: Foundation (23.5 hours effort)
 
-**Stories Included:**
-- S-P1-01: Project Scaffolding
-- S-P1-02: Docker Compose and Build System
-- S-P1-03: ORM Models
-- S-P1-04: Database Migrations
-- S-P1-05: Seed Data
-- S-P1-06: Core Repositories
-- S-P1-07: Supporting Repositories
+**Dependency-driven execution order:**
 
-**Parallelization Map:**
-- Sequential: S-P1-01 → S-P1-02 → S-P1-03 → S-P1-04 → S-P1-05
-- Parallel after S-P1-04: S-P1-06, S-P1-07 (both depend on migrations but independent of each other)
+```
+S-P1-01 (0.5h)
+  -> S-P1-02 (1h)
+       -> S-P1-03 (1.5h)
+            -> S-P1-04 (1h)
+                 -> [S-P1-05 (1h), S-P1-06 (1.5h), S-P1-07 (1.5h)]  (parallel)
+       -> S-P1-15 (1h)  (depends only on S-P1-02)
 
-**Sprint Exit Criteria:**
-- [ ] `make setup` completes without errors
-- [ ] All infrastructure services show healthy status
-- [ ] Migrations run and rollback successfully
-- [ ] Seed data populates all required tables
-- [ ] Repository unit tests pass
+S-P1-06 (1.5h)
+  -> S-P1-08 (1h)
+       -> S-P1-09 (1.5h)
+            -> S-P1-10 (1h)
+                 -> S-P1-11 (1h)  (also depends on S-P1-05)
+                      -> S-P1-12 (1h)
+                           -> S-P1-13 (1.5h)
+                                -> [S-P1-14 (1h), S-P1-16 (1h)]  (parallel; S-P1-14 also depends on S-P1-15)
+                                     -> S-P1-17 (2h)  (after S-P1-16)
+                                          -> S-P1-18 (1h)
+                                               -> S-P1-19 (1.5h)
+                                                    -> S-P1-20 (1h)
+```
 
-**Estimated Effort:** 8 hours (S-P1-01: 0.5h, S-P1-02: 1h, S-P1-03: 1.5h, S-P1-04: 1h, S-P1-05: 1h, S-P1-06: 1.5h, S-P1-07: 1.5h)
+**Parallelization opportunities:**
+- After S-P1-04: S-P1-05, S-P1-06, and S-P1-07 can all run in parallel
+- S-P1-07 can also run in parallel with S-P1-08 and S-P1-09 (no dependency between them)
+- S-P1-15 (MinIO client) depends only on S-P1-02, so it can run in parallel with the entire database track (S-P1-03 through S-P1-07)
+- After S-P1-13: S-P1-14 (document upload) and S-P1-16 (audit trail) can run in parallel
 
----
-
-### Sprint 2: API Core and Middleware (Phase 1, Week 1-2)
-
-**Sprint Goal:** Build the FastAPI application with authentication, authorization, and error handling.
-
-**Stories Included:**
-- S-P1-08: Settings and Dependency Injection
-- S-P1-09: Health Checks and Error Handling
-- S-P1-10: Correlation ID and Logging
-- S-P1-11: Authentication Middleware
-- S-P1-12: RBAC Middleware
-
-**Parallelization Map:**
-- S-P1-07 (Supporting Repos) can run in parallel with S-P1-08 and S-P1-09 (no dependency between them)
-- Sequential core: S-P1-08 → S-P1-09 → S-P1-10
-- After S-P1-10, parallel: S-P1-11, S-P1-12 (but S-P1-12 may want to test with S-P1-11 first)
-- Recommended sequence: S-P1-08 → S-P1-09 → S-P1-10 → S-P1-11 → S-P1-12
-
-**Sprint Exit Criteria:**
-- [ ] `/health` and `/ready` endpoints return 200
-- [ ] All requests log with correlation ID
-- [ ] Invalid API keys return 401
-- [ ] Insufficient permissions return 403
-- [ ] Error responses follow RFC 7807 format
-
-**Estimated Effort:** 5.5 hours (S-P1-08: 1h, S-P1-09: 1.5h, S-P1-10: 1h, S-P1-11: 1h, S-P1-12: 1h)
+**Note:** This is the most loaded phase (20 stories, 23.5h). Consider splitting into sub-phases: Foundation Infrastructure (S-P1-01 through S-P1-07, ~8h), API Core (S-P1-08 through S-P1-12, ~5.5h), and Application/Agent Framework (S-P1-13 through S-P1-20, ~10h) for smaller review surfaces.
 
 ---
 
-### Sprint 3: Application Management and Agent Framework (Phase 1, Week 2)
+### Phase 2: Core AI Agents (18 hours effort)
 
-**Sprint Goal:** Implement application CRUD, document upload, and the LangGraph orchestration framework with stubs.
+Phase 2 has two independent tracks: a backend track and a UI track.
 
-**Note:** This is the most loaded sprint (8 stories, 10h). Consider splitting into Sprint 3a (Application Routes: S-P1-13 through S-P1-16, ~4.5h with parallelism ~2.5h) and Sprint 3b (Agent Framework: S-P1-17 through S-P1-20, ~5.5h sequential) for smaller review surfaces and earlier feedback on application routes.
+**Backend track -- dependency-driven execution order:**
 
-**Stories Included:**
-- S-P1-13: Application CRUD Routes
-- S-P1-14: Document Upload Route
-- S-P1-15: MinIO Client Service
-- S-P1-16: Audit Trail Route
-- S-P1-17: LangGraph Graph Definition
-- S-P1-18: Application Submit Endpoint
-- S-P1-19: Phase 1 Integration Test
-- S-P1-20: Developer Documentation
+```
+S-P2-01 (1.5h)  (depends on S-P1-19)
+  -> S-P2-02 (2h)
+       -> S-P2-03 (1h)
+            -> [S-P2-04 (1.5h), S-P2-05 (1.5h)]  (parallel)
+                 -> S-P2-06 (1.5h)  (after both S-P2-04 and S-P2-05)
+                      -> S-P2-07 (1.5h)
+                           -> S-P2-08 (0.5h)
+```
 
-**Parallelization Map:**
-- Start: S-P1-13, S-P1-15 (parallel)
-- After S-P1-13 and S-P1-15: S-P1-14, S-P1-16 (parallel)
-- After S-P1-14 and S-P1-16: S-P1-17 → S-P1-18 → S-P1-19 → S-P1-20
+**UI track -- dependency-driven execution order:**
 
-**Sprint Exit Criteria:**
-- [ ] Applications can be created, listed, and retrieved
-- [ ] Documents upload to MinIO and link to applications
-- [ ] Audit trail is queryable
-- [ ] Workflow executes through all stub nodes
-- [ ] Workflow state survives service restart
-- [ ] Integration test passes end-to-end
-- [ ] Developer can follow README from clone to working demo
+```
+S-P2-09 (1h)  (depends only on S-P1-01)
+  -> S-P2-10 (1.5h)
+       -> [S-P2-11 (2h), S-P2-12 (1.5h)]  (parallel)
+            -> S-P2-13 (1h)  (after both S-P2-11 and S-P2-12)
+```
 
-**Estimated Effort:** 10 hours (S-P1-13: 1.5h, S-P1-14: 1h, S-P1-15: 1h, S-P1-16: 1h, S-P1-17: 2h, S-P1-18: 1h, S-P1-19: 1.5h, S-P1-20: 1h)
-
-**Phase 1 Complete After Sprint 3**
+**Parallelization opportunities:**
+- The UI track (S-P2-09 through S-P2-13) depends only on S-P1-01 and can run in parallel with all backend Phase 2 work -- this is the largest parallelism unlock
+- After S-P2-03: S-P2-04 (credit) and S-P2-05 (risk) agents can run in parallel
+- After S-P2-10: S-P2-11 (app views) and S-P2-12 (review panel) can run in parallel
 
 ---
 
-### Sprint 4: Document Intelligence (Phase 2, Week 3)
+### Phase 3a: Full Agent Suite (7.5 hours effort)
 
-**Sprint Goal:** Replace document processing stub with real vision-based extraction and PII redaction.
+**Note:** Phase 3a depends only on S-P1-19 (Phase 1 Integration Test), not on Phase 2. This means Phase 3a can start during Phase 2 backend work, running as a parallel track.
 
-**Stories Included:**
-- S-P2-01: PII Redaction Service
-- S-P2-02: Document Processing Agent
+**Dependency-driven execution order:**
 
-**Parallelization Map:**
-- Sequential: S-P2-01 → S-P2-02 (redaction must exist before document processing uses it)
+```
+S-P3a-01 (2h)  (depends on S-P1-19)
+  -> [S-P3a-02 (1.5h), S-P3a-03 (1.5h), S-P3a-04 (1.5h)]  (parallel)
+       -> S-P3a-05 (1h)  (after all three agents)
+```
 
-**Sprint Exit Criteria:**
-- [ ] Document images are redacted before external API calls
-- [ ] Vision model classifies documents with confidence scores
-- [ ] Extracted data persists with per-field confidence
-- [ ] Unit tests cover redaction and extraction
-
-**Estimated Effort:** 3.5 hours (S-P2-01: 1.5h, S-P2-02: 2h)
+**Parallelization opportunities:**
+- After S-P3a-01: all three agent stories (S-P3a-02, S-P3a-03, S-P3a-04) can run in parallel
+- The entire phase can overlap with Phase 2 backend and UI work
 
 ---
 
-### Sprint 5: Financial Analysis and Routing (Phase 2, Week 3-4)
+### Phase 3b: Public Access (9.5 hours effort)
 
-**Sprint Goal:** Implement credit, risk, and routing agents to enable intelligent decision-making.
+**Note:** Phase 3b FRED client (S-P3b-01) depends on S-P2-08 (end of Phase 2 backend), not on Phase 3a. This means FRED client and calculator work can overlap with Phase 3a agent implementation.
 
-**Stories Included:**
-- S-P2-03: Mock Credit Bureau Service
-- S-P2-04: Credit Analysis Agent
-- S-P2-05: Risk Assessment Agent
-- S-P2-06: Confidence-Based Routing
-- S-P2-07: Review Queue and Human Review Actions
-- S-P2-08: Fraud Sensitivity Config
+**Dependency-driven execution order:**
 
-**Parallelization Map:**
-- Start: S-P2-03
-- After S-P2-03, parallel: S-P2-04, S-P2-05
-- After S-P2-04 and S-P2-05: S-P2-06
-- After S-P2-06, parallel: S-P2-07, S-P2-08
+```
+S-P3b-01 (1h)  (depends on S-P2-08)
+  -> S-P3b-02 (1.5h)
+       -> S-P3b-03 (2h)
+            -> [S-P3b-04 (1.5h), S-P3b-05 (1.5h), S-P3b-06 (1h)]  (parallel)
+                 -> S-P3b-07 (1h)  (after all three)
+```
 
-**Sprint Exit Criteria:**
-- [ ] Credit and risk agents produce confidence-scored assessments
-- [ ] Routing logic escalates low-confidence applications
-- [ ] Review queue is role-filtered
-- [ ] Reviewers can approve/deny with rationale
-- [ ] Fraud sensitivity is configurable
-
-**Estimated Effort:** 7.5 hours (S-P2-03: 1h, S-P2-04: 1.5h, S-P2-05: 1.5h, S-P2-06: 1.5h, S-P2-07: 1.5h, S-P2-08: 0.5h)
+**Parallelization opportunities:**
+- S-P3b-01 and S-P3b-02 can overlap with Phase 3a agent implementation
+- After S-P3b-03: S-P3b-04, S-P3b-05, S-P3b-06 (rate limit, defenses, streaming) can all run in parallel
 
 ---
 
-### Sprint 6: Loan Officer Dashboard (Phase 2, Week 4)
-
-**Sprint Goal:** Build the React UI for application management and review workflow.
-
-**Note:** With corrected dependencies, UI build infrastructure (S-P2-09) depends only on S-P1-01 (Project Scaffolding), not on backend Phase 2 work. This means UI work can overlap with Sprint 4-5 backend work. Sprint 6 is shown here for logical grouping, but the UI track can start as early as Sprint 1 completion.
-
-**Stories Included:**
-- S-P2-09: UI Build Infrastructure
-- S-P2-10: UI Auth and Routing
-- S-P2-11: Application List and Detail Views
-- S-P2-12: Review Panel
-- S-P2-13: Phase 2 Integration Test
-
-**Parallelization Map:**
-- Sequential: S-P2-09 → S-P2-10 → S-P2-11, S-P2-12 (parallel) → S-P2-13
-
-**Sprint Exit Criteria:**
-- [ ] UI builds and runs with Vite
-- [ ] Authentication works with API keys
-- [ ] Application list displays with status
-- [ ] Agent analysis is visible in detail view
-- [ ] Review actions work end-to-end
-- [ ] Integration test verifies user flow
-
-**Estimated Effort:** 7 hours (S-P2-09: 1h, S-P2-10: 1.5h, S-P2-11: 2h, S-P2-12: 1.5h, S-P2-13: 1h)
-
-**Phase 2 Complete After Sprint 6**
-
----
-
-### Sprint 7: Compliance and Risk Intelligence (Phase 3a, Week 5)
-
-**Sprint Goal:** Add compliance checking, fraud detection, and denial coaching agents with RAG support.
-
-**Note:** With corrected dependencies, RAG infrastructure (S-P3a-01) depends only on S-P1-19 (Phase 1 Integration Test), not on Phase 2. This means RAG infrastructure can start as early as Sprint 4-5, overlapping with Phase 2 backend and UI work.
-
-**Stories Included:**
-- S-P3a-01: Knowledge Base and RAG Infrastructure
-- S-P3a-02: Compliance Checking Agent
-- S-P3a-03: Fraud Detection Agent
-- S-P3a-04: Denial Coaching Agent
-- S-P3a-05: Cyclic Document Resubmission
-
-**Parallelization Map:**
-- Start: S-P3a-01
-- After S-P3a-01, parallel: S-P3a-02, S-P3a-03, S-P3a-04
-- After all three agents: S-P3a-05
-
-**Sprint Exit Criteria:**
-- [ ] RAG knowledge base is queryable with citations
-- [ ] Compliance agent verifies against regulations
-- [ ] Fraud detection flags suspicious patterns
-- [ ] Denial coaching provides actionable recommendations
-- [ ] Document resubmission cycles back to processing
-
-**Estimated Effort:** 7.5 hours (S-P3a-01: 2h, S-P3a-02: 1.5h, S-P3a-03: 1.5h, S-P3a-04: 1.5h, S-P3a-05: 1h)
-
-**Phase 3a Complete After Sprint 7**
-
----
-
-### Sprint 8: Public Access Tier (Phase 3b, Week 6)
-
-**Sprint Goal:** Implement public-facing intake agent, calculator, and rate limiting.
-
-**Note:** With corrected dependencies, FRED API client (S-P3b-01) depends on S-P2-08 (end of Phase 2 backend), not on Phase 3a. This means FRED client and calculator work can overlap with Phase 3a agent implementation, reducing total elapsed time.
-
-**Stories Included:**
-- S-P3b-01: FRED API Client
-- S-P3b-02: Mortgage Calculator API and Tool
-- S-P3b-03: Intake Graph Implementation
-- S-P3b-04: Rate Limiting and Session Management
-- S-P3b-05: Prompt Injection Defenses
-- S-P3b-06: Streaming Chat (SSE)
-- S-P3b-07: Public Landing Page
-
-**Parallelization Map:**
-- Start: S-P3b-01, S-P3b-02 (parallel)
-- After S-P3b-01 and S-P3b-02: S-P3b-03
-- After S-P3b-03, parallel: S-P3b-04, S-P3b-05, S-P3b-06
-- After all three: S-P3b-07
-
-**Sprint Exit Criteria:**
-- [ ] FRED API provides live mortgage rates
-- [ ] Calculator computes payment scenarios
-- [ ] Intake agent answers mortgage questions with citations
-- [ ] Rate limiting enforces session and IP caps
-- [ ] Prompt injection attacks are blocked
-- [ ] Chat responses stream incrementally
-- [ ] Public landing page is accessible without auth
-
-**Estimated Effort:** 9.5 hours (S-P3b-01: 1h, S-P3b-02: 1.5h, S-P3b-03: 2h, S-P3b-04: 1.5h, S-P3b-05: 1.5h, S-P3b-06: 1h, S-P3b-07: 1h)
-
-**Phase 3b Complete After Sprint 8**
-
----
-
-### Sprint 9: Operability and Polish (Phase 4, Week 7-8)
-
-**Sprint Goal:** Add observability, admin tools, deployment manifests, and CI pipeline.
+### Phase 4: Operability (13 hours effort)
 
 **Note:** Each story should be submitted as an individual PR for meaningful review, not batched.
 
-**Stories Included:**
-- S-P4-01: LangFuse Integration
-- S-P4-02: Audit Trail Export
-- S-P4-03: Admin Configuration UI
-- S-P4-04: Portfolio Analytics Dashboard
-- S-P4-05: Cross-Session Chat Context
-- S-P4-06: Seed Data Expansion
-- S-P4-07: Container Deployment Manifests
-- S-P4-08: CI Pipeline
-- S-P4-09: API Key Lifecycle Management
-- S-P4-10: Documentation Polish
+**Dependency-driven execution order:**
 
-**Parallelization Map:**
-- High parallelism sprint -- most stories are independent:
-  - Parallel group 1: S-P4-01, S-P4-02, S-P4-06, S-P4-07, S-P4-08
-  - Parallel group 2: S-P4-03, S-P4-04, S-P4-09 (all admin features)
-  - After all: S-P4-05 (may depend on some infrastructure), S-P4-10 (final polish)
+```
+All of S-P4-01 through S-P4-09 depend on S-P3b-07 and are independent of each other:
+  -> [S-P4-01 (1.5h), S-P4-02 (1h), S-P4-03 (2h), S-P4-04 (1.5h),
+      S-P4-05 (1.5h), S-P4-06 (1h), S-P4-07 (1.5h), S-P4-08 (1h),
+      S-P4-09 (1h)]  (all parallel)
+       -> S-P4-10 (1h)  (after all above -- final documentation polish)
+```
 
-**Sprint Exit Criteria:**
-- [ ] LangFuse dashboard shows all LLM traces
-- [ ] Audit trails export as documents
-- [ ] Admin UI allows threshold and knowledge base management
-- [ ] Analytics dashboard shows portfolio metrics
-- [ ] Chat context persists for authenticated users
-- [ ] Seed data covers diverse edge cases
-- [ ] Helm charts deploy to container platforms
-- [ ] CI pipeline passes on main branch
-- [ ] API keys support rotation
-- [ ] Documentation is comprehensive
+**Parallelization opportunities:**
+- High parallelism -- up to 9 stories can run simultaneously (observability, audit export, admin UI, analytics, chat context, seed data, deployment, CI, key lifecycle)
+- Only S-P4-10 (documentation polish) must wait for all others
 
-**Estimated Effort:** 13 hours (S-P4-01: 1.5h, S-P4-02: 1h, S-P4-03: 2h, S-P4-04: 1.5h, S-P4-05: 1.5h, S-P4-06: 1h, S-P4-07: 1.5h, S-P4-08: 1h, S-P4-09: 1h, S-P4-10: 1h)
+---
 
-**Phase 4 Complete After Sprint 9**
+### Cross-Phase Parallelism
+
+The following tracks can run concurrently across phase boundaries:
+
+| Track | Stories | Starts After | Duration |
+|-------|---------|-------------|----------|
+| Backend critical path | S-P1-01 through S-P2-08 | Project start | ~36h |
+| UI track | S-P2-09 through S-P2-13 | S-P1-01 | ~6h |
+| Phase 3a (RAG + agents) | S-P3a-01 through S-P3a-05 | S-P1-19 | ~4.5h |
+| Phase 3b (public tier) | S-P3b-01 through S-P3b-07 | S-P2-08 | ~7h |
 
 ---
 
@@ -581,40 +450,40 @@ After applying dependency corrections (TL-01, TL-03, TL-06, TL-08, TL-09, TL-10,
 
 ```
 S-P1-01 (0.5h)
-  → S-P1-02 (1h)
-    → S-P1-03 (1.5h)
-      → S-P1-04 (1h)
-        → S-P1-06 (1.5h)
-          → S-P1-08 (1h)
-            → S-P1-09 (1.5h)
-              → S-P1-10 (1h)
-                → S-P1-11 (1h)
-                  → S-P1-12 (1h)
-                    → S-P1-13 (1.5h)
-                      → S-P1-16 (1h)
-                        → S-P1-17 (2h)
-                          → S-P1-18 (1h)
-                            → S-P1-19 (1.5h)
-                              → S-P2-01 (1.5h)
-                                → S-P2-02 (2h)
-                                  → S-P2-03 (1h)
-                                    → S-P2-04 (1.5h)
-                                      → S-P2-06 (1.5h)
-                                        → S-P2-07 (1.5h)
-                                          → S-P2-08 (0.5h)
-                                            → S-P3b-01 (1h)
-                                              → S-P3b-02 (1.5h)
-                                                → S-P3b-03 (2h)
-                                                  → S-P3b-04 (1.5h)
-                                                    → S-P3b-07 (1h)
+  -> S-P1-02 (1h)
+    -> S-P1-03 (1.5h)
+      -> S-P1-04 (1h)
+        -> S-P1-06 (1.5h)
+          -> S-P1-08 (1h)
+            -> S-P1-09 (1.5h)
+              -> S-P1-10 (1h)
+                -> S-P1-11 (1h)
+                  -> S-P1-12 (1h)
+                    -> S-P1-13 (1.5h)
+                      -> S-P1-16 (1h)
+                        -> S-P1-17 (2h)
+                          -> S-P1-18 (1h)
+                            -> S-P1-19 (1.5h)
+                              -> S-P2-01 (1.5h)
+                                -> S-P2-02 (2h)
+                                  -> S-P2-03 (1h)
+                                    -> S-P2-04 (1.5h)
+                                      -> S-P2-06 (1.5h)
+                                        -> S-P2-07 (1.5h)
+                                          -> S-P2-08 (0.5h)
+                                            -> S-P3b-01 (1h)
+                                              -> S-P3b-02 (1.5h)
+                                                -> S-P3b-03 (2h)
+                                                  -> S-P3b-04 (1.5h)
+                                                    -> S-P3b-07 (1h)
 ```
 
 **Critical Path Total:** ~36 hours
 
 **Parallel tracks (not on critical path):**
-- UI track: S-P2-09(1h) → S-P2-10(1.5h) → S-P2-11(2h)/S-P2-12(1.5h) → S-P2-13(1h) = ~6h (starts from S-P1-01)
-- Phase 3a: S-P3a-01(2h) → S-P3a-02/03/04(1.5h each) → S-P3a-05(1h) = ~4.5h (starts from S-P1-19)
-- S-P1-05(1h) → S-P1-07(1.5h) run in parallel with the S-P1-06 → S-P1-08 chain
+- UI track: S-P2-09(1h) -> S-P2-10(1.5h) -> S-P2-11(2h)/S-P2-12(1.5h) -> S-P2-13(1h) = ~6h (starts from S-P1-01)
+- Phase 3a: S-P3a-01(2h) -> S-P3a-02/03/04(1.5h each) -> S-P3a-05(1h) = ~4.5h (starts from S-P1-19)
+- S-P1-05(1h) -> S-P1-07(1.5h) run in parallel with the S-P1-06 -> S-P1-08 chain
 
 ### Bottleneck Stories
 
@@ -628,101 +497,51 @@ Stories that block the most downstream work:
 6. **S-P3a-01 (RAG Infrastructure)** -- Blocks all RAG-dependent agents
 7. **S-P3b-03 (Intake Graph)** -- Blocks public tier features
 
-### Parallelization Opportunities
-
-High-value opportunities to reduce elapsed time:
-
-**Phase 1:**
-- After S-P1-04, parallelize S-P1-05 (seed data), S-P1-06 (core repos), and S-P1-07 (supporting repos)
-- S-P1-07 can also run in parallel with S-P1-08 and S-P1-09 (no dependency between them)
-- After S-P1-13, parallelize S-P1-14 (document upload) and S-P1-15 (MinIO client)
-
-**Cross-Phase (major unlock from dependency corrections):**
-- UI track (S-P2-09 through S-P2-13) depends only on S-P1-01 and can run in parallel with all backend Phase 2 work -- this is the largest parallelism unlock
-- Phase 3a RAG infrastructure (S-P3a-01) depends only on S-P1-19 and can start during Phase 2 backend work
-- Phase 3b FRED client (S-P3b-01) depends on S-P2-08 and can overlap with Phase 3a agent implementation
-
-**Phase 2 Backend:**
-- After S-P2-03, parallelize S-P2-04 (credit) and S-P2-05 (risk) agents
-- After S-P2-06, parallelize S-P2-07 (review queue) and S-P2-08 (fraud config)
-
-**Phase 2 UI (parallel track):**
-- After S-P2-10, parallelize S-P2-11 (app views) and S-P2-12 (review panel)
-
-**Phase 3a:**
-- After S-P3a-01, parallelize S-P3a-02, S-P3a-03, S-P3a-04 (all three agents)
-
-**Phase 3b:**
-- After S-P3b-03, parallelize S-P3b-04, S-P3b-05, S-P3b-06 (rate limit, defenses, streaming)
-
-**Phase 4:**
-- High parallelism -- up to 5 stories can run simultaneously (observability, admin features, deployment, CI)
-
 ---
 
 ## 5. Risk Register
 
-### Sprint 1 Risks
+### Phase 1 Risks
 
 | Story | Risk | Likelihood | Impact | Mitigation |
 |-------|------|------------|--------|------------|
 | S-P1-01 | Dependency resolution conflicts between api and db packages | Medium | High | Pin versions explicitly; test in clean environment |
 | S-P1-02 | Docker Compose health checks may timeout on slow machines | Low | Medium | Increase health check timeout; document minimum system requirements |
 | S-P1-04 | Migration schema design errors expensive to fix in later phases | Medium | High | Code review by database-engineer and architect before merge |
-
-### Sprint 2 Risks
-
-| Story | Risk | Likelihood | Impact | Mitigation |
-|-------|------|------------|--------|------------|
 | S-P1-11 | API key lookup performance degrades at scale | Low | Medium | Redis caching implemented from day one; monitor latency |
 | S-P1-12 | RBAC hierarchy misunderstood, permissions incorrect | Medium | High | Unit tests for all role combinations; security-engineer review |
-
-### Sprint 3 Risks
-
-| Story | Risk | Likelihood | Impact | Mitigation |
-|-------|------|------------|--------|------------|
 | S-P1-17 | LangGraph checkpoint schema incompatible with future phases | High | Critical | Design checkpoint schema forward-compatible from Phase 1; see TD Section 9 |
 | S-P1-17 | LangGraph graph definition is the most complex Phase 1 WU; tight 2h estimate on critical path | Medium | High | Pre-load implementing agent with LangGraph context; consider 2.5h buffer if unfamiliar |
 | S-P1-19 | Integration test flaky due to async timing issues | Medium | Medium | Use polling with timeout instead of sleep; clear state between tests |
 
-### Sprint 4 Risks
+### Phase 2 Risks
 
 | Story | Risk | Likelihood | Impact | Mitigation |
 |-------|------|------------|--------|------------|
 | S-P2-01 | PII redaction approach fails to detect all PII types | Medium | High | Design spike to validate approach; security-engineer review before implementation |
 | S-P2-02 | Vision model accuracy lower than expected on diverse documents | High | High | Test with diverse document set early; plan fallback extraction strategies |
 | S-P2-02 | LLM response validation logic is complex; non-deterministic outputs make testing fragile | High | Medium | Use Pydantic models for response validation; mock LLM responses in tests with known-good and known-bad shapes |
-
-### Sprint 5 Risks
-
-| Story | Risk | Likelihood | Impact | Mitigation |
-|-------|------|------------|--------|------------|
 | S-P2-06 | Confidence threshold calibration requires extensive tuning | High | Medium | Start with conservative defaults; document tuning process; plan time for adjustment |
 | S-P2-07 | Review queue complexity underestimated | Medium | Medium | Break into smaller tasks if story exceeds 2 hours |
-
-### Sprint 6 Risks
-
-| Story | Risk | Likelihood | Impact | Mitigation |
-|-------|------|------------|--------|------------|
 | S-P2-11 | UI component complexity exceeds estimate | Medium | Medium | Use shadcn/ui for pre-built components; focus on functionality over polish |
 | S-P2-13 | Integration test brittle due to UI state management | Medium | High | Use Playwright best practices; isolate test data |
 
-### Sprint 7 Risks
+### Phase 3a Risks
 
 | Story | Risk | Likelihood | Impact | Mitigation |
 |-------|------|------------|--------|------------|
 | S-P3a-01 | Knowledge base quality directly determines compliance checking quality | High | High | Curate regulatory documents carefully; validate RAG retrieval accuracy |
 | S-P3a-03 | Fraud detection false positive rate too high | High | Medium | Configurable sensitivity from day one; monitor metrics during testing |
 
-### Sprint 8 Risks
+### Phase 3b Risks
 
 | Story | Risk | Likelihood | Impact | Mitigation |
 |-------|------|------------|--------|------------|
+| S-P3b-03 | Intake graph design requires more complexity than estimated | Medium | High | Reuse patterns from loan processing graph; keep intake simpler |
 | S-P3b-04 | Rate limiting calibration wrong, causes either abuse or poor UX | High | High | Start conservative; monitor usage patterns; adjust based on data |
 | S-P3b-05 | Prompt injection defenses bypass rate limiting | Medium | High | Security-engineer review; test with known attack patterns |
-| S-P3b-03 | Intake graph design requires more complexity than estimated | Medium | High | Reuse patterns from loan processing graph; keep intake simpler |
 
-### Sprint 9 Risks
+### Phase 4 Risks
 
 | Story | Risk | Likelihood | Impact | Mitigation |
 |-------|------|------------|--------|------------|
@@ -1574,10 +1393,10 @@ This work breakdown provides:
 
 - **11 epics** organized by capability milestone
 - **55 stories** mapped to technical design work units
-- **9 sprints** with clear goals and exit criteria
+- **Execution order and parallelism** organized by phase with dependency-driven sequencing
 - **Critical path analysis** showing ~36-hour minimum duration
 - **Parallelization opportunities** reducing elapsed time significantly (UI track, Phase 3a, and Phase 3b FRED/calculator all run in parallel with the backend critical path)
-- **Risk register** with mitigation strategies for each sprint
+- **Risk register** with mitigation strategies organized by phase
 - **Complete dependency mapping** ensuring correct execution order
 
 All stories include implementing agent assignments, user story references, machine-verifiable exit conditions, and effort estimates. The breakdown is ready for import into project management tools or execution by autonomous agents.
