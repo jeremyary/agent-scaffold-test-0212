@@ -1,81 +1,71 @@
-# Project Name
+# ai-mortgage-quickstart
 
-<!-- SETUP REQUIRED: If you see placeholder values below (HTML comments with examples, -->
-<!-- unfilled tables), run the /setup skill to configure this project. Placeholder text -->
-<!-- wastes context tokens in every agent session until filled in or removed. -->
-
-<!-- Replace with your project name and a one-line description -->
-> **One-line description of what this project does and who it serves.**
+> **AI-powered mortgage loan processing reference implementation for the Red Hat AI Quickstart template, demonstrating multi-agent orchestration patterns for regulated industries.**
 
 ## Project Context
 
-<!-- Fill in these values when starting a new project. Every agent reads this file. -->
-
 | Attribute | Value |
 |-----------|-------|
-| Maturity | `proof-of-concept` / `mvp` / `production` |
-| Domain | <!-- e.g., fintech, healthcare, developer tooling, internal ops --> |
-| Primary Users | <!-- e.g., internal developers, end customers, ops team --> |
-| Compliance | <!-- e.g., none, SOC 2, HIPAA, PCI-DSS, FedRAMP --> |
+| Maturity | `mvp` |
+| Domain | Fintech — Mortgage Lending |
+| Primary Users | AI Developers / Solutions Architects, Loan Officers, Compliance Officers |
+| Compliance | Fair lending (ECOA, Fair Housing Act) — reference patterns, not production-certified |
 
 ### Maturity Expectations
 
-<!-- Delete the rows that don't apply and keep only your maturity level -->
+**Important:** Maturity level governs **implementation quality** — test coverage, error handling depth, documentation thoroughness, infrastructure complexity. It does **not** govern **workflow phases**. An MVP still follows the full plan-review-build-verify sequence when SDD criteria are met (see `workflow-patterns` skill). The artifacts may be lighter, but they are not skipped.
 
-**Important:** Maturity level governs **implementation quality** — test coverage, error handling depth, documentation thoroughness, infrastructure complexity. It does **not** govern **workflow phases**. A PoC still follows the full plan-review-build-verify sequence when SDD criteria are met (see `workflow-patterns` skill). The artifacts may be lighter, but they are not skipped.
-
-| Concern | Proof-of-Concept | MVP | Production |
-|---------|-------------------|-----|------------|
-| Testing | Smoke tests only | Happy path + critical edges | Full coverage targets (80%+) |
-| Error handling | Console output is fine | Basic error responses | Structured errors, monitoring, alerting |
-| Security | Don't store real secrets | Auth + input validation | Full OWASP audit, dependency scanning, threat model |
-| Documentation | README with setup steps | README + API basics | Full docs suite, ADRs, runbooks |
-| Performance | Ignore unless broken | Profile obvious bottlenecks | Load testing, SLOs, optimization |
-| Code review | Optional | Light review | Full review + security audit gate |
-| Infrastructure | Local dev only | Basic CI + single deploy target | Full CI/CD, staging, monitoring, IaC |
+| Concern | MVP |
+|---------|-----|
+| Testing | Happy path + critical edges |
+| Error handling | Basic error responses |
+| Security | Auth + input validation |
+| Documentation | README + API basics |
+| Performance | Profile obvious bottlenecks |
+| Code review | Light review |
+| Infrastructure | Basic CI + single deploy target |
 
 ## Goals
 
-<!-- What is this project trying to achieve? Be specific. -->
-
-1. <!-- Primary goal -->
-2. <!-- Secondary goal -->
-3. <!-- Tertiary goal -->
+1. Demonstrate multi-agent AI patterns (supervisor-worker orchestration, human-in-the-loop workflows, confidence-based escalation) for regulated industries using LangGraph
+2. Provide a self-contained developer quickstart for the Red Hat AI Quickstart template, deployable locally in under 30 minutes with `make setup && make dev`
+3. Show compliance-first design with complete, immutable audit trails and explainable AI reasoning for every agent decision
+4. Serve as a teaching tool with production-quality code patterns for mortgage lending — not a production loan origination system
 
 ## Non-Goals
 
-<!-- What this project explicitly does NOT do. Helps agents avoid scope creep. -->
-
-- <!-- e.g., "Does not handle payment processing — uses Stripe" -->
-- <!-- e.g., "No mobile app — web only for now" -->
-- <!-- e.g., "Not building a custom auth system — using Auth0" -->
+- Production regulatory certification — demonstrates patterns, not certified for real lending
+- End-user authentication — no user registration, password management, or OAuth; API key auth only
+- Real credit bureau integration — mocked with synthetic data
+- Payment processing — application lifecycle ends at approval/denial
+- Mobile application — web only, desktop/tablet
+- Multi-tenancy
+- Custom ML model training or fine-tuning — uses off-the-shelf LLMs via API
+- Real-time collaboration — UI polls for updates, no WebSockets for app status
+- Internationalization — English only, US mortgage regulations only
+- High-availability deployment — basic deployment for demo/dev
 
 ## Constraints
 
-<!-- Technical, business, or organizational constraints agents should respect. -->
-
-- <!-- e.g., "Must integrate with existing PostgreSQL 14 database" -->
-- <!-- e.g., "All services must run in AWS us-east-1" -->
-- <!-- e.g., "Budget: no paid services beyond hosting during PoC" -->
-- <!-- e.g., "Must support IE11" or "Modern browsers only (last 2 versions)" -->
+- Red Hat ecosystem required: OpenShift for deployment, Podman for containers, Helm for orchestration
+- Must extend the existing Red Hat AI Quickstart template (Turborepo monorepo with React 19, FastAPI, PostgreSQL, Helm charts)
+- Agent orchestration must use LangGraph with persistent checkpointing (PostgresSaver)
+- Hybrid LLM strategy: Claude for reasoning, GPT-4 Vision for document analysis, optional LlamaStack for local/data-residency
+- PostgreSQL + pgvector as single database for application data and RAG embeddings (no separate vector DB)
+- Self-contained quickstart: `make setup && make dev` must get to a working system
+- Complete audit trails: every agent decision, human action, and workflow transition recorded immutably
 
 ## Stakeholder Preferences
 
-<!-- Record stakeholder decision patterns and preferences so agents can anticipate rather than re-ask. -->
-<!-- These accumulate over time as agents learn from interactions. -->
-
 | Preference Area | Observed Pattern |
 |-----------------|-----------------|
-| Review thoroughness | <!-- e.g., "Prefers detailed reviews with specific line references" --> |
-| Risk tolerance | <!-- e.g., "Conservative — prefers proven patterns over cutting-edge" --> |
-| Scope decisions | <!-- e.g., "Tends to defer nice-to-haves to Phase 2" --> |
-| Communication style | <!-- e.g., "Prefers concise summaries with options, not lengthy analysis" --> |
-| Technology biases | <!-- e.g., "Strongly prefers Python over Node.js for backend services" --> |
-| Testing expectations | <!-- e.g., "Expects integration tests for every API endpoint, not just unit tests" --> |
-| Documentation level | <!-- e.g., "Wants ADRs for every significant decision, even in PoC" --> |
-
-<!-- Add rows as patterns emerge. Agents with project memory should update this section -->
-<!-- when they observe consistent preferences across multiple interactions. -->
+| Security posture | Upgrade, don't defer — real API key auth from day one, image redaction before LLM calls, separate DB roles from Phase 1, global rate limits before public access |
+| Feature richness | Prefers impressive over minimal — include fraud detection, denial coaching, PDF metadata examination, sentiment analysis. More agents and richer demos preferred. |
+| Scope decisions | Feature-rich but scoped — adds extras within the agent/demo domain (e.g., cross-session context, expanded FRED series, BatchData integration) |
+| Risk tolerance | Industry-standard patterns preferred — use well-known approaches (e.g., confidence threshold locking with audit trail) over simpler custom alternatives |
+| Permission model | Three roles (loan_officer, senior_underwriter, reviewer) — explicitly chose meaningful permission hierarchy over simpler two-role model |
+| Conflict resolution | All agent conflicts escalate to human review — no automated tie-breaking allowed |
+| Communication style | Detailed product brief provided up front; expects agents to extract and follow requirements without re-asking |
 
 ## Red Hat AI Compliance
 
@@ -92,17 +82,20 @@ See `docs/ai-compliance-checklist.md` for the developer quick-reference checklis
 
 ## Key Decisions
 
-<!-- Record major technology choices here so all agents stay aligned. -->
-<!-- Move detailed trade-off analysis to plans/adr/ as the project matures. -->
-
-- **Language:** <!-- e.g., TypeScript 5.x -->
-- **Runtime:** <!-- e.g., Node.js 22 LTS -->
-- **Backend:** <!-- e.g., Fastify 5 -->
-- **Frontend:** <!-- e.g., React 19 + Vite -->
-- **Database:** <!-- e.g., PostgreSQL 16 -->
-- **ORM:** <!-- e.g., Drizzle -->
-- **Testing:** <!-- e.g., Vitest + Playwright -->
-- **Package Manager:** <!-- e.g., pnpm -->
+- **Language:** TypeScript 5.x (frontend), Python 3.11+ (backend)
+- **Backend:** FastAPI (async)
+- **Frontend:** React 19 + Vite + TanStack Router + TanStack Query + Tailwind CSS + shadcn/ui
+- **Database:** PostgreSQL + pgvector (application data + RAG embeddings)
+- **ORM:** SQLAlchemy 2.0 (async) + Alembic migrations
+- **Testing:** Vitest + Playwright (frontend), Pytest (backend)
+- **Package Manager:** pnpm (frontend), uv (backend)
+- **Build System:** Turborepo
+- **Agent Framework:** LangGraph + LangChain (orchestration, state management, checkpointing)
+- **LLM Observability:** LangFuse
+- **Caching:** Redis (RAG queries, sessions, external API responses, rate limiting)
+- **Object Storage:** MinIO (S3-compatible, document uploads)
+- **Containers:** Podman
+- **Deployment:** Helm charts on OpenShift
 
 ---
 
@@ -154,23 +147,19 @@ This project uses a multi-agent system with specialized Claude Code agents. The 
 @.claude/rules/agent-workflow.md
 @.claude/rules/review-governance.md
 @.claude/rules/architecture.md
+@.claude/rules/domain.md
 
 ## Project Commands
 
-<!-- Uncomment and fill in the actual commands for your project. -->
-<!-- The defaults below assume a Makefile-based workflow with Turborepo. -->
-<!-- This is the canonical location for project commands. architecture.md -->
-<!-- cross-references this section rather than duplicating it. -->
-
 ```bash
-# make setup              # Install all dependencies (Node + Python)
-# make build              # Build all packages
-# make dev                # Start all dev servers (UI + API)
-# make test               # Run tests across all packages
-# make lint               # Run linters across all packages
-# pnpm type-check         # TypeScript type checking
-# make db-start           # Start database container
-# make db-upgrade         # Run database migrations
-# make containers-build   # Build all container images
-# make containers-up      # Start all services via compose
+make setup              # Install all dependencies (Node + Python)
+make build              # Build all packages
+make dev                # Start all dev servers (UI + API)
+make test               # Run tests across all packages
+make lint               # Run linters across all packages
+pnpm type-check         # TypeScript type checking
+make db-start           # Start database + Redis + MinIO containers
+make db-upgrade         # Run database migrations (Alembic)
+make containers-build   # Build all container images
+make containers-up      # Start all services via compose
 ```
