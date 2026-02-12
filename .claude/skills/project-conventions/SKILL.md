@@ -9,21 +9,23 @@ Customize the sections below to match your project. All agents reference these c
 
 ## Technology Stack
 
-<!-- Update these to match your project. The defaults below reflect a typical full-stack setup. -->
-
 | Layer | Technology | Version |
 |-------|-----------|---------|
 | Backend Language | Python | 3.11+ |
-| Backend Framework | FastAPI | — |
+| Backend Framework | FastAPI (async) | — |
 | Frontend Language | TypeScript | 5.x |
 | Frontend Framework | React | 19.x |
 | Frontend Build | Vite | 6.x |
 | Frontend Routing | TanStack Router | — |
 | Frontend State | TanStack Query | — |
 | Frontend Styling | Tailwind CSS + shadcn/ui | — |
-| Database | PostgreSQL | — |
+| Database | PostgreSQL + pgvector | — |
 | ORM | SQLAlchemy 2.0 (async) | — |
 | Migrations | Alembic | — |
+| Agent Framework | LangGraph + LangChain | — |
+| LLM Observability | LangFuse | — |
+| Caching | Redis | — |
+| Object Storage | MinIO (S3-compatible) | — |
 | Backend Testing | pytest | — |
 | Frontend Testing | Vitest + React Testing Library | — |
 | E2E Testing | Playwright | — |
@@ -31,28 +33,26 @@ Customize the sections below to match your project. All agents reference these c
 | Frontend Package Manager | pnpm | — |
 | Build System | Turborepo | — |
 | CI/CD | GitHub Actions | — |
-| Container | Podman / Docker | — |
+| Container | Podman | — |
 | Cloud | OpenShift / Kubernetes | — |
 
 ## Project Structure
 
-<!-- Update to match your project's directory layout. The default below is a Turborepo monorepo. -->
-
 ```
 project/
 ├── packages/
-│   ├── ui/                   # React frontend (pnpm)
-│   ├── api/                  # FastAPI backend (uv/Python)
-│   ├── db/                   # Database models & migrations (uv/Python)
+│   ├── ui/                   # React frontend — loan officer dashboard, public chat (pnpm)
+│   ├── api/                  # FastAPI backend — REST API, agent orchestration (uv/Python)
+│   ├── db/                   # Database models, migrations, RAG embeddings (uv/Python)
 │   └── configs/              # Shared ESLint, Prettier, Ruff configs
 ├── deploy/
-│   └── helm/                 # Helm charts for OpenShift/Kubernetes
+│   └── helm/                 # Helm charts for OpenShift
 ├── plans/                    # SDD planning artifacts (product plan, architecture, requirements)
 │   └── reviews/              # Agent review documents
-├── docs/
+├── docs/                     # Project documentation, product brief, compliance checklist
 │   ├── api/                  # API documentation
 │   └── sre/                  # SLOs, runbooks, incident reviews
-├── compose.yml               # Local development with containers
+├── compose.yml               # Local development (PostgreSQL, Redis, MinIO, LangFuse)
 ├── turbo.json                # Turborepo pipeline configuration
 └── Makefile                  # Common development commands
 ```
@@ -81,13 +81,23 @@ plans/reviews/technical-design-phase-1-review-code-reviewer.md
 
 ## Environment Configuration
 
-<!-- List required environment variables -->
-
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `APP_ENV` | Yes | `development`, `staging`, `production` |
 | `PORT` | No | Server port (default: 8000) |
-| `DATABASE_URL` | Yes | Database connection string |
+| `DATABASE_URL` | Yes | PostgreSQL connection string (with pgvector extension) |
+| `REDIS_URL` | Yes | Redis connection string |
+| `MINIO_ENDPOINT` | Yes | MinIO endpoint URL |
+| `MINIO_ACCESS_KEY` | Yes | MinIO access key |
+| `MINIO_SECRET_KEY` | Yes | MinIO secret key |
+| `ANTHROPIC_API_KEY` | Yes | Claude API key (reasoning tasks) |
+| `OPENAI_API_KEY` | Yes | OpenAI API key (GPT-4 Vision for document analysis) |
+| `FRED_API_KEY` | Yes | Federal Reserve Economic Data API key (free tier) |
+| `BATCHDATA_API_KEY` | No | BatchData property API key (mocked by default) |
+| `LANGFUSE_PUBLIC_KEY` | No | LangFuse public key (LLM observability) |
+| `LANGFUSE_SECRET_KEY` | No | LangFuse secret key |
+| `LANGFUSE_HOST` | No | LangFuse host URL (default: `http://localhost:3001`) |
+| `API_AUTH_KEY` | Yes | API authentication key (`role:key` format) — startup warning if default |
 | `LOG_LEVEL` | No | Logging level (default: `info`) |
 | `SECRET_KEY` | Yes | Application secret key |
 | `CORS_ORIGINS` | No | Allowed CORS origins (default: `http://localhost:5173`) |
