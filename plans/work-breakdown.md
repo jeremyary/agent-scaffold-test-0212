@@ -29,8 +29,8 @@ This work breakdown organizes the 55 work units from the technical design into t
 |--------|-------|
 | Total Epics | 11 |
 | Total Stories | 55 |
-| Total Estimated Effort | ~70 hours |
-| Critical Path Duration | ~38.5 hours |
+| Total Estimated Effort | ~72 hours |
+| Critical Path Duration | ~36 hours |
 | Phases | 4 |
 | Sprints | 9 |
 
@@ -217,7 +217,7 @@ This work breakdown organizes the 55 work units from the technical design into t
 - [ ] UI authenticates via API key in Authorization header
 - [ ] Integration test verifies full user flow
 
-**Dependencies:** E-P2-03
+**Dependencies:** E-P1-01
 **Blocks:** None (completes Phase 2)
 
 ---
@@ -237,7 +237,7 @@ This work breakdown organizes the 55 work units from the technical design into t
 - [ ] Denial coaching generates actionable improvement recommendations
 - [ ] Workflow supports document resubmission loop
 
-**Dependencies:** E-P2-04
+**Dependencies:** E-P1-05
 **Blocks:** E-P3b-01
 
 ---
@@ -258,7 +258,7 @@ This work breakdown organizes the 55 work units from the technical design into t
 - [ ] Streaming chat delivers incremental responses
 - [ ] UI landing page provides public access
 
-**Dependencies:** E-P3a-01
+**Dependencies:** E-P2-03
 **Blocks:** E-P4-01
 
 ---
@@ -314,7 +314,7 @@ This work breakdown organizes the 55 work units from the technical design into t
 - [ ] Seed data populates all required tables
 - [ ] Repository unit tests pass
 
-**Estimated Effort:** 7.5 hours (S-P1-01: 0.5h, S-P1-02: 1h, S-P1-03: 1.5h, S-P1-04: 1h, S-P1-05: 0.5h, S-P1-06: 1.5h, S-P1-07: 1.5h)
+**Estimated Effort:** 8 hours (S-P1-01: 0.5h, S-P1-02: 1h, S-P1-03: 1.5h, S-P1-04: 1h, S-P1-05: 1h, S-P1-06: 1.5h, S-P1-07: 1.5h)
 
 ---
 
@@ -330,6 +330,7 @@ This work breakdown organizes the 55 work units from the technical design into t
 - S-P1-12: RBAC Middleware
 
 **Parallelization Map:**
+- S-P1-07 (Supporting Repos) can run in parallel with S-P1-08 and S-P1-09 (no dependency between them)
 - Sequential core: S-P1-08 → S-P1-09 → S-P1-10
 - After S-P1-10, parallel: S-P1-11, S-P1-12 (but S-P1-12 may want to test with S-P1-11 first)
 - Recommended sequence: S-P1-08 → S-P1-09 → S-P1-10 → S-P1-11 → S-P1-12
@@ -348,6 +349,8 @@ This work breakdown organizes the 55 work units from the technical design into t
 ### Sprint 3: Application Management and Agent Framework (Phase 1, Week 2)
 
 **Sprint Goal:** Implement application CRUD, document upload, and the LangGraph orchestration framework with stubs.
+
+**Note:** This is the most loaded sprint (8 stories, 10h). Consider splitting into Sprint 3a (Application Routes: S-P1-13 through S-P1-16, ~4.5h with parallelism ~2.5h) and Sprint 3b (Agent Framework: S-P1-17 through S-P1-20, ~5.5h sequential) for smaller review surfaces and earlier feedback on application routes.
 
 **Stories Included:**
 - S-P1-13: Application CRUD Routes
@@ -396,7 +399,7 @@ This work breakdown organizes the 55 work units from the technical design into t
 - [ ] Extracted data persists with per-field confidence
 - [ ] Unit tests cover redaction and extraction
 
-**Estimated Effort:** 3 hours (S-P2-01: 1.5h, S-P2-02: 1.5h)
+**Estimated Effort:** 3.5 hours (S-P2-01: 1.5h, S-P2-02: 2h)
 
 ---
 
@@ -433,6 +436,8 @@ This work breakdown organizes the 55 work units from the technical design into t
 
 **Sprint Goal:** Build the React UI for application management and review workflow.
 
+**Note:** With corrected dependencies, UI build infrastructure (S-P2-09) depends only on S-P1-01 (Project Scaffolding), not on backend Phase 2 work. This means UI work can overlap with Sprint 4-5 backend work. Sprint 6 is shown here for logical grouping, but the UI track can start as early as Sprint 1 completion.
+
 **Stories Included:**
 - S-P2-09: UI Build Infrastructure
 - S-P2-10: UI Auth and Routing
@@ -460,6 +465,8 @@ This work breakdown organizes the 55 work units from the technical design into t
 ### Sprint 7: Compliance and Risk Intelligence (Phase 3a, Week 5)
 
 **Sprint Goal:** Add compliance checking, fraud detection, and denial coaching agents with RAG support.
+
+**Note:** With corrected dependencies, RAG infrastructure (S-P3a-01) depends only on S-P1-19 (Phase 1 Integration Test), not on Phase 2. This means RAG infrastructure can start as early as Sprint 4-5, overlapping with Phase 2 backend and UI work.
 
 **Stories Included:**
 - S-P3a-01: Knowledge Base and RAG Infrastructure
@@ -489,6 +496,8 @@ This work breakdown organizes the 55 work units from the technical design into t
 ### Sprint 8: Public Access Tier (Phase 3b, Week 6)
 
 **Sprint Goal:** Implement public-facing intake agent, calculator, and rate limiting.
+
+**Note:** With corrected dependencies, FRED API client (S-P3b-01) depends on S-P2-08 (end of Phase 2 backend), not on Phase 3a. This means FRED client and calculator work can overlap with Phase 3a agent implementation, reducing total elapsed time.
 
 **Stories Included:**
 - S-P3b-01: FRED API Client
@@ -523,6 +532,8 @@ This work breakdown organizes the 55 work units from the technical design into t
 ### Sprint 9: Operability and Polish (Phase 4, Week 7-8)
 
 **Sprint Goal:** Add observability, admin tools, deployment manifests, and CI pipeline.
+
+**Note:** Each story should be submitted as an individual PR for meaningful review, not batched.
 
 **Stories Included:**
 - S-P4-01: LangFuse Integration
@@ -566,41 +577,44 @@ The critical path is the longest sequential chain of dependent stories. This det
 
 ### Critical Path
 
+After applying dependency corrections (TL-01, TL-03, TL-06, TL-08, TL-09, TL-10, TL-11), the critical path runs through the backend track. The UI track (S-P2-09 through S-P2-13) and Phase 3a (S-P3a-01 through S-P3a-05) are now parallel tracks, not on the critical path.
+
 ```
 S-P1-01 (0.5h)
   → S-P1-02 (1h)
     → S-P1-03 (1.5h)
       → S-P1-04 (1h)
-        → S-P1-05 (0.5h)
-          → S-P1-06 (1.5h)
-            → S-P1-08 (1h)
-              → S-P1-09 (1.5h)
-                → S-P1-10 (1h)
-                  → S-P1-11 (1h)
-                    → S-P1-12 (1h)
-                      → S-P1-13 (1.5h)
-                        → S-P1-16 (1h)
-                          → S-P1-17 (2h)
-                            → S-P1-18 (1h)
+        → S-P1-06 (1.5h)
+          → S-P1-08 (1h)
+            → S-P1-09 (1.5h)
+              → S-P1-10 (1h)
+                → S-P1-11 (1h)
+                  → S-P1-12 (1h)
+                    → S-P1-13 (1.5h)
+                      → S-P1-16 (1h)
+                        → S-P1-17 (2h)
+                          → S-P1-18 (1h)
+                            → S-P1-19 (1.5h)
                               → S-P2-01 (1.5h)
-                                → S-P2-02 (1.5h)
+                                → S-P2-02 (2h)
                                   → S-P2-03 (1h)
                                     → S-P2-04 (1.5h)
                                       → S-P2-06 (1.5h)
                                         → S-P2-07 (1.5h)
-                                          → S-P2-09 (1h)
-                                            → S-P2-10 (1.5h)
-                                              → S-P2-11 (2h)
-                                                → S-P3a-01 (2h)
-                                                  → S-P3a-02 (1.5h)
-                                                    → S-P3a-05 (1h)
-                                                      → S-P3b-02 (1.5h)
-                                                        → S-P3b-03 (2h)
-                                                          → S-P3b-04 (1.5h)
-                                                            → S-P3b-07 (1h)
+                                          → S-P2-08 (0.5h)
+                                            → S-P3b-01 (1h)
+                                              → S-P3b-02 (1.5h)
+                                                → S-P3b-03 (2h)
+                                                  → S-P3b-04 (1.5h)
+                                                    → S-P3b-07 (1h)
 ```
 
-**Critical Path Total:** ~38.5 hours
+**Critical Path Total:** ~36 hours
+
+**Parallel tracks (not on critical path):**
+- UI track: S-P2-09(1h) → S-P2-10(1.5h) → S-P2-11(2h)/S-P2-12(1.5h) → S-P2-13(1h) = ~6h (starts from S-P1-01)
+- Phase 3a: S-P3a-01(2h) → S-P3a-02/03/04(1.5h each) → S-P3a-05(1h) = ~4.5h (starts from S-P1-19)
+- S-P1-05(1h) → S-P1-07(1.5h) run in parallel with the S-P1-06 → S-P1-08 chain
 
 ### Bottleneck Stories
 
@@ -609,28 +623,36 @@ Stories that block the most downstream work:
 1. **S-P1-02 (Docker Compose)** -- Blocks all database and API work
 2. **S-P1-04 (Migrations)** -- Blocks all repository and route work
 3. **S-P1-17 (LangGraph Graph Definition)** -- Blocks all agent replacement work
-4. **S-P2-06 (Confidence-Based Routing)** -- Blocks review workflow and UI
-5. **S-P3a-01 (RAG Infrastructure)** -- Blocks all RAG-dependent agents
-6. **S-P3b-03 (Intake Graph)** -- Blocks public tier features
+4. **S-P1-19 (Phase 1 Integration Test)** -- Gates Phase 2 and Phase 3a start
+5. **S-P2-06 (Confidence-Based Routing)** -- Blocks review workflow and Phase 3b
+6. **S-P3a-01 (RAG Infrastructure)** -- Blocks all RAG-dependent agents
+7. **S-P3b-03 (Intake Graph)** -- Blocks public tier features
 
 ### Parallelization Opportunities
 
 High-value opportunities to reduce elapsed time:
 
 **Phase 1:**
-- After S-P1-04, parallelize S-P1-06 and S-P1-07 (repositories)
+- After S-P1-04, parallelize S-P1-05 (seed data), S-P1-06 (core repos), and S-P1-07 (supporting repos)
+- S-P1-07 can also run in parallel with S-P1-08 and S-P1-09 (no dependency between them)
 - After S-P1-13, parallelize S-P1-14 (document upload) and S-P1-15 (MinIO client)
 
-**Phase 2:**
+**Cross-Phase (major unlock from dependency corrections):**
+- UI track (S-P2-09 through S-P2-13) depends only on S-P1-01 and can run in parallel with all backend Phase 2 work -- this is the largest parallelism unlock
+- Phase 3a RAG infrastructure (S-P3a-01) depends only on S-P1-19 and can start during Phase 2 backend work
+- Phase 3b FRED client (S-P3b-01) depends on S-P2-08 and can overlap with Phase 3a agent implementation
+
+**Phase 2 Backend:**
 - After S-P2-03, parallelize S-P2-04 (credit) and S-P2-05 (risk) agents
 - After S-P2-06, parallelize S-P2-07 (review queue) and S-P2-08 (fraud config)
+
+**Phase 2 UI (parallel track):**
 - After S-P2-10, parallelize S-P2-11 (app views) and S-P2-12 (review panel)
 
 **Phase 3a:**
 - After S-P3a-01, parallelize S-P3a-02, S-P3a-03, S-P3a-04 (all three agents)
 
 **Phase 3b:**
-- Start with parallel S-P3b-01 (FRED) and S-P3b-02 (calculator)
 - After S-P3b-03, parallelize S-P3b-04, S-P3b-05, S-P3b-06 (rate limit, defenses, streaming)
 
 **Phase 4:**
@@ -660,6 +682,7 @@ High-value opportunities to reduce elapsed time:
 | Story | Risk | Likelihood | Impact | Mitigation |
 |-------|------|------------|--------|------------|
 | S-P1-17 | LangGraph checkpoint schema incompatible with future phases | High | Critical | Design checkpoint schema forward-compatible from Phase 1; see TD Section 9 |
+| S-P1-17 | LangGraph graph definition is the most complex Phase 1 WU; tight 2h estimate on critical path | Medium | High | Pre-load implementing agent with LangGraph context; consider 2.5h buffer if unfamiliar |
 | S-P1-19 | Integration test flaky due to async timing issues | Medium | Medium | Use polling with timeout instead of sleep; clear state between tests |
 
 ### Sprint 4 Risks
@@ -668,6 +691,7 @@ High-value opportunities to reduce elapsed time:
 |-------|------|------------|--------|------------|
 | S-P2-01 | PII redaction approach fails to detect all PII types | Medium | High | Design spike to validate approach; security-engineer review before implementation |
 | S-P2-02 | Vision model accuracy lower than expected on diverse documents | High | High | Test with diverse document set early; plan fallback extraction strategies |
+| S-P2-02 | LLM response validation logic is complex; non-deterministic outputs make testing fragile | High | Medium | Use Pydantic models for response validation; mock LLM responses in tests with known-good and known-bad shapes |
 
 ### Sprint 5 Risks
 
@@ -752,7 +776,7 @@ Implement Docker Compose for local infrastructure (PostgreSQL with pgvector, Red
 **Estimated Effort:** M (1.5h)
 
 **Description:**
-Create SQLAlchemy ORM models for all tables in architecture Section 3.1: applications, documents, agent_decisions, audit_events, users, api_keys, configuration, embeddings.
+Create SQLAlchemy ORM models for all tables in architecture Section 3.1: applications, documents, agent_decisions, audit_events, users, api_keys, configuration, embeddings. Create `tests/unit/test_models.py` to verify all models import and compile correctly.
 
 ---
 
@@ -779,7 +803,7 @@ Create Alembic initial migration with all tables, indexes, and permission grants
 **Dependencies:** S-P1-04
 **User Stories Satisfied:** US-073 (partial)
 **Exit Condition:** `make db-seed && psql $DATABASE_URL -c "SELECT COUNT(*) FROM users;" | grep -q 3`
-**Estimated Effort:** S (0.5h)
+**Estimated Effort:** M (1h)
 
 **Description:**
 Create seed data migration with three users (loan officer, senior underwriter, reviewer) and their corresponding API keys. Include startup warning detection for default keys.
@@ -821,7 +845,7 @@ Implement DocumentRepository, UserRepository, AgentDecisionRepository, and Confi
 **WU Reference:** P1-WU07
 **Implementing Agent:** backend-developer
 **Priority:** P0
-**Dependencies:** S-P1-06, S-P1-07
+**Dependencies:** S-P1-06
 **User Stories Satisfied:** US-068 (partial)
 **Exit Condition:** `cd packages/api && pytest tests/unit/test_settings.py -v && pytest tests/unit/test_dependencies.py -v`
 **Estimated Effort:** M (1h)
@@ -837,7 +861,7 @@ Implement Pydantic Settings for environment configuration and FastAPI dependency
 **Implementing Agent:** backend-developer
 **Priority:** P0
 **Dependencies:** S-P1-08
-**User Stories Satisfied:** US-065
+**User Stories Satisfied:** US-065 (verify against requirements.md -- TD maps P1-WU08 to US-067)
 **Exit Condition:** `cd packages/api && pytest tests/unit/test_health.py -v && pytest tests/unit/test_errors.py -v`
 **Estimated Effort:** M (1.5h)
 
@@ -866,7 +890,7 @@ Implement correlation ID middleware (reads X-Request-ID or generates UUID) and s
 **WU Reference:** P1-WU10
 **Implementing Agent:** backend-developer
 **Priority:** P0
-**Dependencies:** S-P1-10
+**Dependencies:** S-P1-10, S-P1-05
 **User Stories Satisfied:** US-058, US-059
 **Exit Condition:** `cd packages/api && pytest tests/unit/test_auth.py -v`
 **Estimated Effort:** M (1h)
@@ -1003,7 +1027,7 @@ Create end-to-end integration test: create application, upload document, submit 
 **Priority:** P0
 **Dependencies:** S-P1-19
 **User Stories Satisfied:** US-068, US-069
-**Exit Condition:** `test -f README.md && test -f .env.example && grep -q REDIS_PASSWORD .env.example && grep -q "quickstart" README.md`
+**Exit Condition:** `test -f README.md && test -f .env.example && grep -q DATABASE_URL .env.example && grep -q REDIS_PASSWORD .env.example && grep -q SSN_ENCRYPTION_KEY .env.example && grep -q ANTHROPIC_API_KEY .env.example && grep -q "make setup" README.md`
 **Estimated Effort:** M (1h)
 
 **Description:**
@@ -1036,7 +1060,7 @@ Implement PII redaction service that processes document images before external L
 **Dependencies:** S-P2-01
 **User Stories Satisfied:** US-012, US-013, US-014
 **Exit Condition:** `cd packages/api && pytest tests/unit/test_document_processing_agent.py -v`
-**Estimated Effort:** M (1.5h)
+**Estimated Effort:** L (2h)
 
 **Description:**
 Replace document processing stub with vision model integration. Classify documents into types with confidence scores. Extract structured data with per-field confidence. Persist results.
@@ -1099,7 +1123,7 @@ Replace risk assessment stub with financial ratio calculations (DTI, LTV) and ri
 **Estimated Effort:** M (1.5h)
 
 **Description:**
-Replace routing stub with real confidence-based decision logic. Compare aggregated confidence against configurable thresholds. Route to auto-approval, escalation, or denial. Handle agent disagreements.
+Replace routing stub with real confidence-based decision logic. Compare aggregated confidence against configurable thresholds. Route to auto-approval, escalation, or denial. Handle agent disagreements. Also implements GET/PUT /v1/config/thresholds endpoints for threshold management (reviewer role required).
 
 ---
 
@@ -1138,9 +1162,9 @@ Implement PUT /v1/config/fraud-sensitivity endpoint for reviewer role. Store con
 **WU Reference:** P2-WU09a
 **Implementing Agent:** frontend-developer
 **Priority:** P0
-**Dependencies:** S-P2-07
+**Dependencies:** S-P1-01
 **User Stories Satisfied:** US-041 (partial)
-**Exit Condition:** `cd packages/ui && pnpm build && pnpm preview`
+**Exit Condition:** `cd packages/ui && pnpm build && npx tsc --noEmit`
 **Estimated Effort:** M (1h)
 
 **Description:**
@@ -1215,7 +1239,7 @@ Create Playwright end-to-end test: login, create application, upload document, s
 **WU Reference:** P3a-WU01
 **Implementing Agent:** backend-developer
 **Priority:** P0
-**Dependencies:** S-P2-13
+**Dependencies:** S-P1-19
 **User Stories Satisfied:** US-025 (partial)
 **Exit Condition:** `cd packages/api && pytest tests/unit/test_rag_service.py -v`
 **Estimated Effort:** L (2h)
@@ -1292,7 +1316,7 @@ Implement workflow logic to cycle back to document processing when reviewer requ
 **WU Reference:** P3b-WU01
 **Implementing Agent:** backend-developer
 **Priority:** P0
-**Dependencies:** S-P3a-05
+**Dependencies:** S-P2-08
 **User Stories Satisfied:** US-078 (partial)
 **Exit Condition:** `cd packages/api && pytest tests/unit/test_fred_client.py -v`
 **Estimated Effort:** M (1h)
@@ -1431,7 +1455,7 @@ Implement GET /v1/applications/{id}/audit/export endpoint (reviewer only). Gener
 **Priority:** P2
 **Dependencies:** S-P3b-07
 **User Stories Satisfied:** US-057
-**Exit Condition:** `cd packages/ui && pnpm test -- admin-config.test.tsx`
+**Exit Condition:** `cd packages/ui && pnpm test -- admin-config.test.tsx && npx tsc --noEmit`
 **Estimated Effort:** L (2h)
 
 **Description:**
@@ -1446,7 +1470,7 @@ Build admin configuration interface for reviewers. Adjust confidence thresholds,
 **Priority:** P2
 **Dependencies:** S-P3b-07
 **User Stories Satisfied:** None (new P2 feature)
-**Exit Condition:** `cd packages/ui && pnpm test -- analytics.test.tsx`
+**Exit Condition:** `cd packages/ui && pnpm test -- analytics.test.tsx && npx tsc --noEmit`
 **Estimated Effort:** M (1.5h)
 
 **Description:**
@@ -1551,8 +1575,8 @@ This work breakdown provides:
 - **11 epics** organized by capability milestone
 - **55 stories** mapped to technical design work units
 - **9 sprints** with clear goals and exit criteria
-- **Critical path analysis** showing ~38.5-hour minimum duration
-- **Parallelization opportunities** reducing elapsed time by ~40%
+- **Critical path analysis** showing ~36-hour minimum duration
+- **Parallelization opportunities** reducing elapsed time significantly (UI track, Phase 3a, and Phase 3b FRED/calculator all run in parallel with the backend critical path)
 - **Risk register** with mitigation strategies for each sprint
 - **Complete dependency mapping** ensuring correct execution order
 
