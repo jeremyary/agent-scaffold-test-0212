@@ -18,6 +18,7 @@ For features with **3+ implementation tasks**, both the Product Manager's produc
 | **NFRs are user-facing** | Quality expectations framed as user outcomes ("feels responsive"), not implementation targets ("< 200ms Redis cache hit") |
 | **User flows present** | Key persona journeys through the system are documented — not just feature lists |
 | **Phasing describes capability milestones** | Each phase describes what the system can do, not which epics/stories are included |
+| **Completion criteria align with prioritization** | Features required by completion criteria are classified as Must Have — if a feature is needed to declare the project complete, it cannot be Should/Could Have |
 
 ### Technical Design Review Checklist
 
